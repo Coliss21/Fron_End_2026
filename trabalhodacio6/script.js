@@ -30,20 +30,24 @@ function controlador (){
                 cria.src = estados.morto;
             }
         }, 1000);
-
-        function alimentar() {
-
-            cria.src = estados.comendo 
-            contador = 0;
-            console.log("Comendo");
-
-            if(time_click) clearInterval(time_click)
-   
-                time_click = setTimeout (()=>{
-                    cria.src = estados.alimentado;
-                    time_out = setTimeout (()=>{
-                        cria.src = estados.normal;
-                },2000);
-               },1000);
 }
+function alimentar() {
+
+    img.src = imagens.clicado;
+    contador = 0;
+
+    console.log("Comendo");
+
+    if (timeoutClique) clearTimeout(timeoutClique);
+
+    timeoutClique = setTimeout(() => {
+        img.src = imagens.feliz;
+
+        timeoutBack = setTimeout(() => {
+            img.src = imagens.normal;
+        }, 2000);
+
+    }, 1000);
+}
+
 controlador();
