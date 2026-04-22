@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copa do Mundo 2026</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1f44, #123a7a);
+            color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background-color: #ffffff;
+            color: #0a1f44;
+            cursor: pointer;
+        }
+
+        .container-grupos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card-grupo {
+            background-color: #ffffff;
+            color: #333;
+            width: 300px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .card-grupo h2 {
+            text-align: center;
+            color: #0a1f44;
+        }
+
+        .card-grupo ul {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        .card-grupo li {
+            padding: 6px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .card-grupo details {
+            margin-top: 15px;
+            background-color: #f4f8fb;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .jogadores {
+            margin-top: 40px;
+        }
+    </style>
+
+    <script>
+        function proximoGrupos() {
+            const dados = [
+                {
+                    titulo: "🅳 Grupo D",
+                    selecoes: ["Estados Unidos", "Paraguai", "Austrália", "Turquia"],
+                    fatos: "Os EUA jogam em casa. Austrália enfrenta frequentemente seleções sul-americanas."
+                },
+                {
+                    titulo: "🅴 Grupo E",
+                    selecoes: ["Alemanha", "Equador", "Costa do Marfim", "Curaçao"],
+                    fatos: "Alemanha costuma dominar grupos. Equador e Costa do Marfim têm estilo físico."
+                },
+                {
+                    titulo: "🅵 Grupo F",
+                    selecoes: ["Holanda", "Japão", "Tunísia", "Suécia"],
+                    fatos: "Grupo equilibrado com seleções tradicionais e emergentes."
+                }
+            ];
+
+            const cards = document.querySelectorAll(".card-grupo");
+
+            cards.forEach((card, index) => {
+                card.querySelector("h2").textContent = dados[index].titulo;
+
+                const lis = card.querySelectorAll("li");
+                lis.forEach((li, i) => {
+                    li.textContent = dados[index].selecoes[i];
+                });
+
+                card.querySelector("p").textContent = dados[index].fatos;
+            });
+        }
+
+        function add() {
+            const container = document.getElementById("cardsContainer");
+
+            const novoCard = document.createElement("div");
+            novoCard.className = "col-md-4 d-flex justify-content-center mt-3";
+
+            novoCard.innerHTML = `
+                <div class="card" style="width: 18rem;">
+                    <img src="img/Lucas_Paqueta.png" class="card-img-top">
+                    <div class="card-body">
+                        <h5 class="card-title">Lucas Tolentino Coelho de Lima</h5>
+                        <p class="card-text">📅 27/08/1997 (28 anos)</p>
+                        <p class="card-text">📏 1,80 m</p>
+                        <p class="card-text">🏃 Meio-campista</p>
+                        <p class="card-text">⭐ 8,8</p>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(novoCard);
+        }
+    </script>
+</head>
+
+<body>
+
+    <h1>🌍 Copa do Mundo 2026 - Fase de Grupos</h1>
+
+    <button onclick="proximoGrupos()">Próximo</button>
+
+    <div class="container-grupos">
+
+        <div class="card-grupo">
+            <h2>🅰️ Grupo A</h2>
+            <ul>
+                <li>México</li>
+                <li>África do Sul</li>
+                <li>Coreia do Sul</li>
+                <li>República Tcheca</li>
+            </ul>
+            <details>
+                <summary>Saiba mais</summary>
+                <p>O jogo de abertura será México x África do Sul.</p>
+            </details>
+        </div>
+
+        <div class="card-grupo">
+            <h2>🅱️ Grupo B</h2>
+            <ul>
+                <li>Canadá</li>
+                <li>Suíça</li>
+                <li>Catar</li>
+                <li>Bósnia</li>
+            </ul>
+            <details>
+                <summary>Saiba mais</summary>
+                <p>O Canadá joga em casa.</p>
+            </details>
+        </div>
+
+        <div class="card-grupo">
+            <h2>🅲 Grupo C</h2>
+            <ul>
+                <li>Brasil</li>
+                <li>Marrocos</li>
+                <li>Haiti</li>
+                <li>Escócia</li>
+            </ul>
+            <details>
+                <summary>Saiba mais</summary>
+                <p>Brasil nunca perdeu para a Escócia.</p>
+            </details>
+        </div>
+
+    </div>
+
+    <h1>Jogadores</h1>
+
+    <button onclick="add()">Adicionar Novo Jogador</button>
+
+    <div class="container jogadores">
+        <div class="row justify-content-center" id="cardsContainer"></div>
+    </div>
+
+</body>
+</html>
