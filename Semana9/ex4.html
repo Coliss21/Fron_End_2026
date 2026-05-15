@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinity Bank — Simulador</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #05080f;
+      --surface: #0c1120;
+      --surface-2: #111827;
+      --surface-3: #1a2236;
+      --border: #1e2d47;
+      --border-md: #2a3f60;
+      --text: #e8edf5;
+      --text-muted: #6b82a8;
+      --text-dim: #374a66;
+      --gold: #f0c040;
+      --gold-dim: #7a6020;
+      --gold-bg: #1a140a;
+      --cyan: #38bdf8;
+      --cyan-bg: #061824;
+      --cyan-border: #0e3a54;
+      --green: #4ade80;
+      --green-bg: #061a0e;
+      --green-border: #0e3a20;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Space Grotesk', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 35% at 50% 0%, rgba(56,189,248,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(240,192,64,0.04) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    .page { width: 100%; max-width: 560px; }
+
+    /* ── HEADER ── */
+    .bank-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #0e2a4a, #1a3d6e);
+      border: 1px solid var(--border-md);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo svg { width: 24px; height: 24px; }
+
+    .bank-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .bank-name span { color: var(--cyan); }
+
+    .bank-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+
+    /* ── CARD VISUAL ── */
+    .card-visual {
+      background: linear-gradient(135deg, #0e2240 0%, #0a1a30 50%, #061020 100%);
+      border: 1px solid var(--border-md);
+      border-radius: 14px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-visual::before {
+      content: '∞';
+      position: absolute;
+      right: -10px; top: -20px;
+      font-size: 120px;
+      color: rgba(56,189,248,0.05);
+      font-family: var(--sans);
+      font-weight: 700;
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .card-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,0.03), transparent);
+      pointer-events: none;
+    }
+
+    .card-chip {
+      width: 32px; height: 24px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border-radius: 4px;
+      margin-bottom: 1.25rem;
+      opacity: 0.8;
+    }
+
+    .card-number {
+      font-family: var(--mono);
+      font-size: 15px;
+      letter-spacing: 0.2em;
+      color: rgba(232,237,245,0.6);
+      margin-bottom: 1rem;
+    }
+
+    .card-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .card-holder-label {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+
+    .card-holder-name {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+
+    .card-flag-badge {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .flag-visa   { background: rgba(25,80,200,0.25); border-color: rgba(25,80,200,0.5); color: #7eb0ff; }
+    .flag-master { background: rgba(220,60,40,0.2);  border-color: rgba(220,60,40,0.4); color: #ff9a8a; }
+    .flag-elo    { background: rgba(240,180,40,0.15);border-color: rgba(240,180,40,0.35);color: #f0c040; }
+    .flag-none   { background: rgba(30,45,71,0.5);   border-color: var(--border);        color: var(--text-dim); }
+
+    /* ── FORM ── */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      margin-bottom: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .field { margin-bottom: 1rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 0.75rem 0.9rem;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b82a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 2.5rem;
+      cursor: pointer;
+    }
+
+    select:focus, input:focus {
+      border-color: rgba(56,189,248,0.45);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
+
+    select option { background: #0c1120; }
+
+    /* parcelas grid */
+    .parcelas-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .parcela-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 0.65rem 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .parcela-btn:hover { border-color: var(--border-md); color: var(--text); }
+
+    .parcela-btn.active {
+      background: rgba(56,189,248,0.1);
+      border-color: rgba(56,189,248,0.5);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(56,189,248,0.08);
+    }
+
+    .parcela-label {
+      font-size: 9px;
+      font-weight: 400;
+      color: inherit;
+      display: block;
+      margin-top: 2px;
+      opacity: 0.7;
+      font-family: var(--sans);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── BTN ── */
+    .btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--cyan);
+      color: #040d18;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 1.25rem;
+    }
+
+    .btn:hover { opacity: 0.88; box-shadow: 0 0 28px rgba(56,189,248,0.25); }
+    .btn:active { transform: scale(0.985); }
+    .btn svg { width: 16px; height: 16px; }
+
+    /* ── RESULT ── */
+    .result {
+      display: none;
+      animation: rise 0.3s cubic-bezier(0.34,1.4,0.64,1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .result.show { display: block; }
+
+    .result-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px 10px 0 0;
+      border-bottom: none;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .result-title {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .result-flag-pill {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .result-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      overflow: hidden;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-row:last-child { border-bottom: none; }
+
+    .result-row-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .row-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .result-row-value {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .result-total {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      margin-top: 8px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .total-left { }
+
+    .total-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(74,222,128,0.6);
+      font-family: var(--mono);
+      margin-bottom: 4px;
+    }
+
+    .total-parcelas {
+      font-size: 13px;
+      color: rgba(74,222,128,0.7);
+    }
+
+    .total-value {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .error-msg {
+      text-align: center;
+      font-size: 12px;
+      color: #ff6b6b;
+      margin-top: 0.6rem;
+      min-height: 18px;
+      font-family: var(--mono);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="bank-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4C7.5 4 4 7.5 4 12C4 16.5 7.5 20 12 20" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M12 4C16.5 4 20 7.5 20 12C20 16.5 16.5 20 12 20" stroke="#f0c040" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2" fill="#38bdf8"/>
+        </svg>
+      </div>
+      <div>
+        <p class="bank-name">Infinity <span>Bank</span></p>
+        <p class="bank-sub">SIMULADOR DE VENDAS</p>
+      </div>
+    </div>
+
+    <!-- cartão visual -->
+    <div class="card-visual">
+      <div class="card-chip"></div>
+      <p class="card-number">•••• &nbsp; •••• &nbsp; •••• &nbsp; <span id="cv-last">0000</span></p>
+      <div class="card-bottom">
+        <div>
+          <p class="card-holder-label">Valor simulado</p>
+          <p class="card-holder-name" id="cv-value">R$ 0,00</p>
+        </div>
+        <span class="card-flag-badge flag-none" id="cv-flag">BANDEIRA</span>
+      </div>
+    </div>
+
+    <!-- formulário -->
+    <div class="form-card">
+      <p class="section-title">Dados da simulação</p>
+
+      <div class="field">
+        <label for="bandeira">Bandeira do cartão</label>
+        <select id="bandeira">
+          <option value="">Selecione a bandeira</option>
+          <option value="visa">Visa — taxa 2,00%</option>
+          <option value="master">Mastercard — taxa 1,85%</option>
+          <option value="elo">Elo — taxa 3,00%</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="valor">Valor da venda (R$)</label>
+        <input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00" />
+      </div>
+
+      <div class="field">
+        <label>Número de parcelas</label>
+        <div class="parcelas-grid">
+          <button class="parcela-btn" data-p="1" onclick="selectParcela(1)">1×<span class="parcela-label">à vista</span></button>
+          <button class="parcela-btn" data-p="3" onclick="selectParcela(3)">3×<span class="parcela-label">0,35%/mês</span></button>
+          <button class="parcela-btn" data-p="6" onclick="selectParcela(6)">6×<span class="parcela-label">0,35%/mês</span></button>
+          <button class="parcela-btn" data-p="12" onclick="selectParcela(12)">12×<span class="parcela-label">0,35%/mês</span></button>
+        </div>
+        <input type="hidden" id="parcelas" value="" />
+      </div>
+
+      <button class="btn" id="simBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Simular venda
+      </button>
+      <p class="error-msg" id="error"></p>
+    </div>
+
+    <!-- resultado -->
+    <div class="result" id="result">
+      <div class="result-header">
+        <span class="result-title">Resumo da simulação</span>
+        <span class="result-flag-pill" id="r-flag-pill"></span>
+      </div>
+      <div class="result-body">
+        <div class="result-row">
+          <span class="result-row-label">
+            <span class="row-dot" style="background:#38bdf8"></span>
+            Valor bruto
+          </span>
+          <span class="result-row-value" id="r-bruto"></span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-label">
+            <span class="row-dot" style="background:#fb923c"></span>
+            Taxa da bandeira
+          </span>
+          <span class="result-row-value" id="r-taxa"></span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-label">
+            <span class="row-dot" style="background:#f472b6"></span>
+            Juros (0,35% × parcelas)
+          </span>
+          <span class="result-row-value" id="r-juros"></span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-label">
+            <span class="row-dot" style="background:#a78bfa"></span>
+            Taxa mensal (R$ 12,50 × parcelas)
+          </span>
+          <span class="result-row-value" id="r-mensal"></span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-label">
+            <span class="row-dot" style="background:#4ade80"></span>
+            Total a receber
+          </span>
+          <span class="result-row-value" id="r-total-row"></span>
+        </div>
+      </div>
+
+      <div class="result-total">
+        <div class="total-left">
+          <p class="total-label">Valor de cada parcela</p>
+          <p class="total-parcelas" id="r-parcel-desc"></p>
+        </div>
+        <span class="total-value" id="r-parcela"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedParcelas = 0;
+
+    function selectParcela(n) {
+      selectedParcelas = n;
+      document.getElementById('parcelas').value = n;
+      document.querySelectorAll('.parcela-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.parcela-btn[data-p="${n}"]`).classList.add('active');
+    }
+
+    // preview no cartão
+    document.getElementById('bandeira').addEventListener('change', function () {
+      const flag = document.getElementById('cv-flag');
+      flag.className = 'card-flag-badge';
+      switch (this.value) {
+        case 'visa':   flag.classList.add('flag-visa');   flag.textContent = 'VISA';        break;
+        case 'master': flag.classList.add('flag-master'); flag.textContent = 'MASTERCARD';  break;
+        case 'elo':    flag.classList.add('flag-elo');    flag.textContent = 'ELO';         break;
+        default:       flag.classList.add('flag-none');   flag.textContent = 'BANDEIRA';
+      }
+    });
+
+    document.getElementById('valor').addEventListener('input', function () {
+      const v = parseFloat(this.value);
+      document.getElementById('cv-value').textContent = isNaN(v) ? 'R$ 0,00' : fmt(v);
+      const s = this.value.replace('.', '').slice(-4).padStart(4, '0');
+      document.getElementById('cv-last').textContent = s.slice(0, 4);
+    });
+
+    function fmt(v) {
+      return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    document.getElementById('simBtn').addEventListener('click', function () {
+      const err   = document.getElementById('error');
+      const res   = document.getElementById('result');
+      const flag  = document.getElementById('bandeira').value;
+      const valor = Number(document.getElementById('valor').value);
+      const parc  = selectedParcelas;
+
+      err.textContent = '';
+      res.className = 'result';
+
+      if (!flag)          { err.textContent = 'Selecione a bandeira do cartão.'; return; }
+      if (!valor || valor <= 0) { err.textContent = 'Informe um valor válido para a venda.'; return; }
+      if (!parc)          { err.textContent = 'Escolha o número de parcelas.'; return; }
+
+      // taxa da bandeira
+      let taxaPerc, flagLabel, flagCls;
+      switch (flag) {
+        case 'visa':   taxaPerc = 0.02;   flagLabel = 'VISA';       flagCls = 'flag-visa';   break;
+        case 'master': taxaPerc = 0.0185; flagLabel = 'MASTERCARD'; flagCls = 'flag-master'; break;
+        case 'elo':    taxaPerc = 0.03;   flagLabel = 'ELO';        flagCls = 'flag-elo';    break;
+      }
+
+      const valorTaxa   = valor * taxaPerc;
+      const valorJuros  = valor * 0.0035 * parc;
+      const valorMensal = 12.50 * parc;
+      const totalFinal  = valor + valorTaxa + valorJuros + valorMensal;
+      const porParcela  = totalFinal / parc;
+
+      document.getElementById('r-bruto').textContent       = fmt(valor);
+      document.getElementById('r-taxa').textContent        = '+ ' + fmt(valorTaxa);
+      document.getElementById('r-juros').textContent       = '+ ' + fmt(valorJuros);
+      document.getElementById('r-mensal').textContent      = '+ ' + fmt(valorMensal);
+      document.getElementById('r-total-row').textContent   = fmt(totalFinal);
+      document.getElementById('r-parcela').textContent     = fmt(porParcela);
+      document.getElementById('r-parcel-desc').textContent = `${parc}× de ${fmt(porParcela)}`;
+
+      const pill = document.getElementById('r-flag-pill');
+      pill.className = 'result-flag-pill ' + flagCls;
+      pill.textContent = flagLabel;
+
+      res.className = 'result show';
+      res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  </script>
+</body>
+</html>

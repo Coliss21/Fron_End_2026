@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Notas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700&family=Sono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #10100f;
+      --surface: #181817;
+      --surface-2: #212120;
+      --border: #2c2c2a;
+      --border-md: #3a3a38;
+      --text: #f2f0ea;
+      --text-muted: #8c8a84;
+      --text-dim: #4a4a46;
+      --accent: #f5e642;
+      --mono: 'Sono', sans-serif;
+      --display: 'Unbounded', sans-serif;
+
+      --blue: #4b9fff;
+      --blue-bg: #0c1a2e;
+      --blue-border: #1a3a60;
+      --blue-text: #a8ccf5;
+
+      --green: #3dcc7e;
+      --green-bg: #0b1e14;
+      --green-border: #1a4a2e;
+      --green-text: #90dbb0;
+
+      --red: #ff5858;
+      --red-bg: #1f0d0d;
+      --red-border: #4a1818;
+      --red-text: #f5a0a0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 55% 40% at 50% 0%, rgba(245,230,66,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .container { width: 100%; max-width: 500px; }
+
+    .header { text-align: center; margin-bottom: 2.25rem; }
+
+    .icon-wrap {
+      width: 52px; height: 52px;
+      border: 1px solid var(--border-md);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+      background: var(--surface);
+    }
+
+    .icon-wrap svg { width: 22px; height: 22px; stroke: var(--accent); }
+
+    h1 {
+      font-family: var(--display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.15;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .sub {
+      margin-top: 0.5rem;
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .card-body { padding: 1.75rem; }
+
+    .field { margin-bottom: 1.1rem; }
+
+    .field:last-of-type { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 7px;
+      font-family: var(--display);
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 0.7rem 0.9rem;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      -moz-appearance: textfield;
+    }
+
+    input::-webkit-inner-spin-button,
+    input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    input::placeholder { color: var(--text-dim); }
+
+    input:focus {
+      border-color: rgba(245,230,66,0.4);
+      box-shadow: 0 0 0 3px rgba(245,230,66,0.07);
+    }
+
+    .grades-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.1rem;
+    }
+
+    .grades-row .field { margin-bottom: 0; }
+
+    .grade-hint {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: #0a0a08;
+      border: none;
+      border-radius: 4px;
+      font-family: var(--display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      box-shadow: 0 0 24px rgba(245,230,66,0.22);
+    }
+
+    .btn:active { transform: scale(0.985); }
+
+    .btn svg { width: 15px; height: 15px; }
+
+    .result {
+      margin-top: 1.25rem;
+      border-radius: 5px;
+      padding: 1.4rem 1.5rem;
+      display: none;
+      animation: pop 0.28s cubic-bezier(0.34,1.5,0.64,1) both;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.96) translateY(6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .result.approved  { display: block; background: var(--blue-bg);  border: 1px solid var(--blue-border);  }
+    .result.exam      { display: block; background: var(--green-bg); border: 1px solid var(--green-border); }
+    .result.failed    { display: block; background: var(--red-bg);   border: 1px solid var(--red-border);   }
+
+    .result-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .result-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .approved  .result-icon { background: rgba(75,159,255,0.12); }
+    .exam      .result-icon { background: rgba(61,204,126,0.12); }
+    .failed    .result-icon { background: rgba(255,88,88,0.12);  }
+
+    .result-icon svg { width: 18px; height: 18px; }
+    .approved  .result-icon svg { stroke: var(--blue);  }
+    .exam      .result-icon svg { stroke: var(--green); }
+    .failed    .result-icon svg { stroke: var(--red);   }
+
+    .result-name {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .approved  .result-name { color: var(--blue-text);  }
+    .exam      .result-name { color: var(--green-text); }
+    .failed    .result-name { color: var(--red-text);   }
+
+    .result-status {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 2px;
+      font-family: var(--display);
+    }
+
+    .approved  .result-status { color: var(--blue);  }
+    .exam      .result-status { color: var(--green); }
+    .failed    .result-status { color: var(--red);   }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 0.5rem;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.04);
+      border-radius: 4px;
+      padding: 0.65rem 0.75rem;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 500;
+      font-family: var(--mono);
+    }
+
+    .approved  .stat-value { color: var(--blue-text);  }
+    .exam      .stat-value { color: var(--green-text); }
+    .failed    .stat-value { color: var(--red-text);   }
+
+    .extra {
+      margin-top: 10px;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .exam  .extra { color: var(--green-text); }
+    .failed .extra { color: var(--red-text); }
+
+    .error-msg {
+      margin-top: 0.75rem;
+      font-size: 12px;
+      color: var(--red);
+      text-align: center;
+      min-height: 18px;
+      letter-spacing: 0.03em;
+    }
+
+    .legend {
+      margin-top: 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .legend-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.6rem 0.75rem;
+      text-align: center;
+    }
+
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin: 0 auto 5px;
+    }
+
+    .legend-dot.blue  { background: var(--blue); }
+    .legend-dot.green { background: var(--green); }
+    .legend-dot.red   { background: var(--red); }
+
+    .legend-range {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .legend-name {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <h1>Boletim<br><span>Escolar</span></h1>
+      <p class="sub">Calcule a média e descubra a situação final do aluno</p>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+
+        <div class="field">
+          <label for="nome">Nome do aluno</label>
+          <input id="nome" type="text" placeholder="Ex: Maria Silva" autocomplete="off" />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grades-row">
+          <div class="field">
+            <label for="n1">Nota 1</label>
+            <input id="n1" type="number" step="0.1" min="0" max="10" placeholder="0.0" />
+            <p class="grade-hint">0 – 10</p>
+          </div>
+          <div class="field">
+            <label for="n2">Nota 2</label>
+            <input id="n2" type="number" step="0.1" min="0" max="10" placeholder="0.0" />
+            <p class="grade-hint">0 – 10</p>
+          </div>
+          <div class="field">
+            <label for="n3">Nota 3</label>
+            <input id="n3" type="number" step="0.1" min="0" max="10" placeholder="0.0" />
+            <p class="grade-hint">0 – 10</p>
+          </div>
+        </div>
+
+        <button class="btn" id="calcBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="2" width="16" height="20" rx="2"/>
+            <line x1="8" y1="6" x2="16" y2="6"/>
+            <line x1="8" y1="10" x2="16" y2="10"/>
+            <line x1="8" y1="14" x2="12" y2="14"/>
+          </svg>
+          Calcular média
+        </button>
+
+        <p class="error-msg" id="error" role="alert"></p>
+
+        <div id="result" class="result" role="alert" aria-live="polite">
+          <div class="result-top">
+            <div class="result-icon">
+              <svg id="r-icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>
+            </div>
+            <div>
+              <p class="result-name" id="r-name"></p>
+              <p class="result-status" id="r-status"></p>
+            </div>
+          </div>
+          <div class="result-grid">
+            <div class="stat">
+              <p class="stat-label">Nota 1</p>
+              <p class="stat-value" id="r-n1"></p>
+            </div>
+            <div class="stat">
+              <p class="stat-label">Nota 2</p>
+              <p class="stat-value" id="r-n2"></p>
+            </div>
+            <div class="stat">
+              <p class="stat-label">Nota 3</p>
+              <p class="stat-value" id="r-n3"></p>
+            </div>
+          </div>
+          <div class="stat" style="margin-top:8px; text-align:center;">
+            <p class="stat-label">Média final</p>
+            <p class="stat-value" id="r-avg" style="font-size:28px;"></p>
+          </div>
+          <div class="extra" id="r-extra" style="display:none;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot blue"></div>
+        <p class="legend-range">7.0 – 10.0</p>
+        <p class="legend-name">Aprovado</p>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot green"></div>
+        <p class="legend-range">4.0 – 6.9</p>
+        <p class="legend-name">Exame</p>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot red"></div>
+        <p class="legend-range">0.0 – 3.9</p>
+        <p class="legend-name">Reprovado</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ICON_CHECK  = `<polyline points="20 6 9 17 4 12"/>`;
+    const ICON_CLOCK  = `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`;
+    const ICON_X      = `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`;
+
+    document.getElementById('calcBtn').addEventListener('click', function () {
+      const nome = document.getElementById('nome').value.trim();
+      const n1   = Number(document.getElementById('n1').value);
+      const n2   = Number(document.getElementById('n2').value);
+      const n3   = Number(document.getElementById('n3').value);
+      const err  = document.getElementById('error');
+      const res  = document.getElementById('result');
+
+      err.textContent = '';
+      res.className = 'result';
+
+      if (!nome) { err.textContent = 'Informe o nome do aluno.'; return; }
+      const inputs = [document.getElementById('n1'), document.getElementById('n2'), document.getElementById('n3')];
+      for (let i = 0; i < inputs.length; i++) {
+        if (inputs[i].value === '') { err.textContent = `Preencha a Nota ${i + 1}.`; return; }
+        const v = Number(inputs[i].value);
+        if (isNaN(v) || v < 0 || v > 10) { err.textContent = `Nota ${i + 1} deve ser entre 0 e 10.`; return; }
+      }
+
+      const avg = (n1 + n2 + n3) / 3;
+
+      document.getElementById('r-name').textContent = nome;
+      document.getElementById('r-n1').textContent = n1.toFixed(2);
+      document.getElementById('r-n2').textContent = n2.toFixed(2);
+      document.getElementById('r-n3').textContent = n3.toFixed(2);
+      document.getElementById('r-avg').textContent = avg.toFixed(2);
+
+      const icon  = document.getElementById('r-icon');
+      const status = document.getElementById('r-status');
+      const extra  = document.getElementById('r-extra');
+
+      extra.style.display = 'none';
+
+      if (avg >= 7.0) {
+        res.className = 'result approved';
+        icon.innerHTML = ICON_CHECK;
+        status.textContent = 'Aprovado';
+      } else if (avg >= 4.0) {
+        const falta = (10 - avg).toFixed(2);
+        res.className = 'result exam';
+        icon.innerHTML = ICON_CLOCK;
+        status.textContent = 'Em exame';
+        extra.style.display = 'block';
+        extra.textContent = `Precisa de mais ${falta} pontos no exame final para atingir a nota máxima (10.00).`;
+      } else {
+        res.className = 'result failed';
+        icon.innerHTML = ICON_X;
+        status.textContent = 'Reprovado';
+        extra.style.display = 'block';
+        extra.textContent = `Média insuficiente. São necessários pelo menos 4.00 para ir a exame e 7.00 para aprovação direta.`;
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('calcBtn').click();
+    });
+  </script>
+</body>
+</html>
